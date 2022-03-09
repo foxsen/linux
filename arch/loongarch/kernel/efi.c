@@ -50,18 +50,18 @@ void __init efi_init(void)
 	if (!efi_bp)
 		return;
 
-	efi_systab = (efi_system_table_t *)efi_bp->systemtable;
+	efi_systab = (efi_system_table_t *)TO_CAC((unsigned long)efi_bp->systemtable);
 	if (!efi_systab) {
 		pr_err("Can't find EFI system table.\n");
 		return;
 	}
 
 	set_bit(EFI_64BIT, &efi.flags);
-	efi_config_table = (unsigned long)efi_systab->tables;
-	efi.runtime	 = (efi_runtime_services_t *)efi_systab->runtime;
+	efi_config_table = (unsigned long)TO_CAC((unsigned long)efi_systab->tables);
+	efi.runtime	 = (efi_runtime_services_t *)TO_CAC((unsigned long)efi_systab->runtime);
 	efi.runtime_version = efi.runtime ? (unsigned int)efi.runtime->hdr.revision : 0;
 
-	efi_config_parse_tables((void *)efi_systab->tables, efi_systab->nr_tables, arch_tables);
+	efi_config_parse_tables((void *)efi_config_table, efi_systab->nr_tables, arch_tables);
 }
 
 static ssize_t boardinfo_show(struct kobject *kobj,

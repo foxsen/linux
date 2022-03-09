@@ -20,7 +20,7 @@ extern void efifb_setup_from_dmi(struct screen_info *si, const char *opt);
 #define arch_efi_call_virt(p, f, args...)        \
 ({                                               \
 	efi_##f##_t * __f;                       \
-	__f = p->f;                              \
+	__f = (efi_##f##_t *)TO_CAC((unsigned long)p->f);       \
 	__f(args);                               \
 })
 

@@ -65,7 +65,7 @@ static int parse_vbios(struct _extention_list_hdr *head)
 		return -EPERM;
 	}
 
-	loongson_sysconf.vgabios_addr = pvbios->vbios_addr;
+	loongson_sysconf.vgabios_addr = TO_CAC((unsigned long)pvbios->vbios_addr);
 
 	return 0;
 }
@@ -111,7 +111,10 @@ static int list_find(struct _extention_list_hdr *head)
 				return -EPERM;
 			}
 		}
-		fhead = fhead->next;
+		if (fhead->next) 
+			fhead = (struct _extention_list_hdr *)TO_CAC((unsigned long)fhead->next);
+		else
+			fhead = fhead->next;
 	}
 
 	return 0;
@@ -145,6 +148,8 @@ static int get_bpi_version(void *signature)
 
 void __init fw_init_environ(void)
 {
+	struct _extention_list_hdr *fhead;
+
 	efi_bp = (struct bootparamsinterface *)_fw_envp;
 	loongson_sysconf.bpi_ver = get_bpi_version(&efi_bp->signature);
 
@@ -152,8 +157,8 @@ void __init fw_init_environ(void)
 	register_addrs_set(loongson_chipcfg, TO_UNCAC(0x1fe00180), 16);
 	register_addrs_set(loongson_chiptemp, TO_UNCAC(0x1fe0019c), 16);
 	register_addrs_set(loongson_freqctrl, TO_UNCAC(0x1fe001d0), 16);
-
-	if (list_find(efi_bp->extlist))
+	fhead = efi_bp->extlist ? (struct _extention_list_hdr *)TO_CAC((unsigned long)efi_bp->extlist) : NULL;
+	if (list_find(fhead))
 		pr_warn("Scan bootparam failed\n");
 }
 
